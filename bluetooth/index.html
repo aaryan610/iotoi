@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bluetooth List</title>
+
+    <style>
+      #terminal div {
+        color: gray;
+      }
+
+      #terminal div.out {
+        color: red;
+      }
+
+      #terminal div.in {
+        color: blue;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="connect" type="button">Connect</button>
+
+    <button id="disconnect" type="button">Disconnect</button>
+
+    <div id="terminal">
+      <div>Device connection...</div>
+      <div class="out">Outcoming message</div>
+      <div class="in">Incoming message</div>
+    </div>
+
+    <form id="send-form">
+      <input id="input" type="text" />
+      <button type="submit">Send</button>
+    </form>
+
+    <script src="../assets/js/bluetooth.js"></script>
+  </body>
+</html>
