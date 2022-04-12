@@ -40,11 +40,24 @@ function requestBluetoothDevice() {
   return navigator.bluetooth
     .requestDevice({
       //   filters: [{ services: [0xffe0] }],
-      acceptAllDevices: true,
+      // acceptAllDevices: true,
+      // filters: [{ name: "ESP_BLE_SECURITY" }],
+      filters: [{ services: ["00000d18-0000-1000-8000-00805f9b34fb"] }],
+      optionalServices: [
+        0x2a95,
+        0x1801,
+        0x1800,
+        "00000d18-0000-1000-8000-00805f9b34fb",
+      ],
     })
     .then((device) => {
       log('"' + device.name + '" bluetooth device selected');
       deviceCache = device;
+
+      deviceCache.addEventListener(
+        "gattserverdisconnected",
+        handleDisconnection
+      );
 
       return deviceCache;
     });
@@ -87,6 +100,11 @@ function startNotifications(characteristic) {
 
   return characteristic.startNotifications().then(() => {
     log("Notifications started");
+
+    characteristic.addEventListener(
+      "characteristicvaluechanged",
+      handleCharacteristicValueChanged
+    );
   });
 }
 
@@ -98,12 +116,110 @@ function log(data, type = "") {
   );
 }
 
+function handleDisconnection(event) {
+  let device = event.target;
+
+  log(
+    '"' +
+      device.name +
+      '" bluetooth device disconnected, trying to reconnect...'
+  );
+
+  connectDeviceAndCacheCharacteristic(device)
+    .then((characteristic) => startNotifications(characteristic))
+    .catch((error) => log(error));
+}
+
 // Disconnect from the connected device
 function disconnect() {
-  //
+  if (deviceCache) {
+    log('Disconnecting from "' + deviceCache.name + '" bluetooth device...');
+    deviceCache.removeEventListener(
+      "gattserverdisconnected",
+      handleDisconnection
+    );
+
+    if (deviceCache.gatt.connected) {
+      deviceCache.gatt.disconnect();
+      log('"' + deviceCache.name + '" bluetooth device disconnected');
+    } else {
+      log(
+        '"' + deviceCache.name + '" bluetooth device is already disconnected'
+      );
+    }
+  }
+
+  // Added condition
+  if (characteristicCache) {
+    characteristicCache.removeEventListener(
+      "characteristicvaluechanged",
+      handleCharacteristicValueChanged
+    );
+    characteristicCache = null;
+  }
+
+  deviceCache = null;
+}
+
+// Data receiving
+function handleCharacteristicValueChanged(event) {
+  let value = new TextDecoder().decode(event.target.value);
+  log(value, "in");
+}
+
+// Intermediate buffer for incoming data
+let readBuffer = "";
+
+// Data receiving
+function handleCharacteristicValueChanged(event) {
+  let value = new TextDecoder().decode(event.target.value);
+
+  for (let c of value) {
+    if (c === "\n") {
+      let data = readBuffer.trim();
+      readBuffer = "";
+
+      if (data) {
+        receive(data);
+      }
+    } else {
+      readBuffer += c;
+    }
+  }
+}
+
+// Received data handling
+function receive(data) {
+  log(data, "in");
 }
 
 // Send data to the connected device
 function send(data) {
-  //
+  data = String(data);
+
+  if (!data || !characteristicCache) {
+    return;
+  }
+
+  data += "\n";
+
+  if (data.length > 20) {
+    let chunks = data.match(/(.|[\r\n]){1,20}/g);
+
+    writeToCharacteristic(characteristicCache, chunks[0]);
+
+    for (let i = 1; i < chunks.length; i++) {
+      setTimeout(() => {
+        writeToCharacteristic(characteristicCache, chunks[i]);
+      }, i * 100);
+    }
+  } else {
+    writeToCharacteristic(characteristicCache, data);
+  }
+
+  log(data, "out");
+}
+
+function writeToCharacteristic(characteristic, data) {
+  characteristic.writeValue(new TextEncoder().encode(data));
 }
