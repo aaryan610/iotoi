@@ -43,12 +43,18 @@ function requestBluetoothDevice() {
       // acceptAllDevices: true,
       // filters: [{ name: "ESP_BLE_SECURITY" }],
       filters: [{ services: ["00000d18-0000-1000-8000-00805f9b34fb"] }],
-      optionalServices: [
-        0x2a95,
-        0x1801,
-        0x1800,
-        "00000d18-0000-1000-8000-00805f9b34fb",
-      ],
+      // optionalServices: [
+      //   0x1801,
+      //   0x2a05,
+      //   0x1800,
+      //   0x2a00,
+      //   0x2a01,
+      //   0x2aa6,
+      //   0x2a95,
+      //   0x2a96,
+      //   0x2902,
+      //   "00000d18-0000-1000-8000-00805f9b34fb",
+      // ],
     })
     .then((device) => {
       log('"' + device.name + '" bluetooth device selected');
@@ -79,12 +85,12 @@ function connectDeviceAndCacheCharacteristic(device) {
     .then((server) => {
       log("GATT server connected, getting service...");
 
-      return server.getPrimaryService(0xffe0);
+      return server.getPrimaryService(0x2a95);
     })
     .then((service) => {
       log("Service found, getting characteristic...");
 
-      return service.getCharacteristic(0xffe1);
+      return service.getCharacteristic(0x2a96);
     })
     .then((characteristic) => {
       log("Characteristic found");
@@ -162,10 +168,10 @@ function disconnect() {
 }
 
 // Data receiving
-function handleCharacteristicValueChanged(event) {
-  let value = new TextDecoder().decode(event.target.value);
-  log(value, "in");
-}
+// function handleCharacteristicValueChanged(event) {
+//   let value = new TextDecoder().decode(event.target.value);
+//   log(value, "in");
+// }
 
 // Intermediate buffer for incoming data
 let readBuffer = "";
