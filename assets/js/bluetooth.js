@@ -41,8 +41,8 @@ function requestBluetoothDevice() {
     .requestDevice({
       //   filters: [{ services: [0xffe0] }],
       // acceptAllDevices: true,
-      // filters: [{ name: "ESP_BLE_SECURITY" }],
-      filters: [{ services: ["00000d18-0000-1000-8000-00805f9b34fb"] }],
+      filters: [{ name: "iotoi" }],
+      // filters: [{ services: ["93d1d0ef-85cd-4228-ae48-a5e44d03f0bc"] }],
       // optionalServices: [
       //   0x1801,
       //   0x2a05,
@@ -85,12 +85,12 @@ function connectDeviceAndCacheCharacteristic(device) {
     .then((server) => {
       log("GATT server connected, getting service...");
 
-      return server.getPrimaryService(0x2a95);
+      return server.getPrimaryService("93d1d0ef-85cd-4228-ae48-a5e44d03f0bc");
     })
     .then((service) => {
       log("Service found, getting characteristic...");
 
-      return service.getCharacteristic(0x2a96);
+      return service.getCharacteristic("cbd6a8de-9c2c-4155-b6fb-c66811973fcc");
     })
     .then((characteristic) => {
       log("Characteristic found");
