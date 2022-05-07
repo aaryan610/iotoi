@@ -12,6 +12,7 @@
     />
   </head>
   <body>
+    <div class="coordinates"></div>
     <div id="map" style="width: 100vw; height: 100vh"></div>
 
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.js"></script>
@@ -27,6 +28,9 @@
       };
 
       const success = (pos) => {
+        document.querySelector(".coordinates").innerText =
+          pos.coords.longitude + "," + pos.coords.latitude;
+
         var map = new mapboxgl.Map({
           container: "map",
           style: "mapbox://styles/mapbox/streets-v11",
