@@ -4,34 +4,76 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tracking using JS</title>
+    <title>Map</title>
+
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.css"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <button type="button" id="start">Start</button>
-    <button type="button" id="stop">Stop</button>
+    <div id="map" style="width: 100vw; height: 100vh"></div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.js"></script>
 
     <script>
-      const start = document.querySelector("#start");
-      const stop = document.querySelector("#stop");
+      mapboxgl.accessToken =
+        "pk.eyJ1IjoidGVjaGVmZmluIiwiYSI6ImNsMnVsemZiNTAzY2EzaW1wZ2kwZnVvMHYifQ.HvolRXL1kXo6te0fkz27TQ";
 
-      const coordinates = [];
+      let options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      };
 
-      start.addEventListener("click", () => {
-        navigator.geolocation.watchPosition(
-          (data) => {
-            console.log(data);
-            coordinates.push([data.coords.latitude, data.coords.longitude]);
-            window.localStorage.setItem(
-              "coordinates",
-              JSON.stringify(coordinates)
-            );
-          },
-          (error) => console.log(error),
-          {
-            enableHighAccuracy: true,
-          }
-        );
-      });
+      const success = (pos) => {
+        var map = new mapboxgl.Map({
+          container: "map",
+          style: "mapbox://styles/mapbox/streets-v11",
+          center: [pos.coords.longitude, pos.coords.latitude],
+          zoom: 15,
+        });
+
+        // Create a default Marker, colored black, rotated 45 degrees.
+        // const marker2 = new mapboxgl.Marker({ color: "black", rotation: 45 })
+        const marker2 = new mapboxgl.Marker({ color: "black" })
+          .setLngLat([pos.coords.longitude, pos.coords.latitude])
+          .addTo(map);
+
+        map.on("load", () => {
+          map.addSource("route", {
+            type: "geojson",
+            data: {
+              type: "Feature",
+              properties: {},
+            },
+          });
+          map.addLayer({
+            id: "route",
+            type: "line",
+            source: "route",
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+            },
+            paint: {
+              "line-color": "#888",
+              "line-width": 8,
+            },
+          });
+        });
+      };
+
+      const error = (err) => {
+        console.log(err);
+      };
+
+      navigator.geolocation.getCurrentPosition(success, error, options);
+
+      // Create a default Marker and add it to the map.
+      // const marker1 = new mapboxgl.Marker()
+      //   .setLngLat([-122.483696, 37.833818])
+      //   .addTo(map);
     </script>
   </body>
 </html>

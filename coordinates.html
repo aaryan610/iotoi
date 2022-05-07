@@ -10,8 +10,9 @@
     <div class="coordinates"></div>
 
     <script>
-      const coord = JSON.parse(window.localStorage.getItem("coordinates"));
+      const coord = window.localStorage.getItem("coordinates");
 
+      console.log(coord);
       document.querySelector(".coordinates").innerText = coord;
     </script>
   </body>
